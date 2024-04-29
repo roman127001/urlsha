@@ -43,7 +43,9 @@ ensuring adherence to Project's and Team's standards.
 
 - **CI/CD**: Implement continuous integration and continuous deployment pipelines to automate testing. 
 Think about using GitHub Actions or GitLab CI/CD. 
-In perfect case building process must be completed in specific machine to avoid affecting local or production machine and environment. 
+In perfect case building process must be completed in specific machine to avoid affecting local or production machine and environment.
+
+- **Load Testing**: Conduct load testing to evaluate the service's performance under various traffic conditions.
 
 These enhancements aim to fortify the service's security, reliability, and usability, ensuring its 
 effectiveness in URL management and redirection.

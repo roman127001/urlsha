@@ -7,7 +7,7 @@ import (
 type Store interface {
 	Get(key string) (string, bool)
 	Set(key, val string)
-	IsExpire(key, val string)
+	Expire(key string) bool
 }
 
 // TODO - use `redis` or clear map by `copy`! (without `copy` GC will not free memory!); `map` has this issue.

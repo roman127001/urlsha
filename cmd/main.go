@@ -2,13 +2,11 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/roman127001/urlsha/internal/shorter"
 	store "github.com/roman127001/urlsha/internal/store/inruntime"
 	"github.com/rs/zerolog/log"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,6 +21,15 @@ import (
 // TODO add `description` for URL?
 // TODO use redis (or other outer storage)?
 // TODO user Name or ID as prefix for short URL?
+
+// TODO opened questions for decode:
+// 1. Just decode - without redirect (why?). May be add another handler with redirect?
+//
+// ```
+// The service should generate short aliases for long URLs
+// and be capable of mapping those aliases back to the original URLs.
+// ```
+// 2. Key must be determined by input data or random? Random is more secure?
 
 const (
 	// TODO move those params to config!
@@ -39,101 +46,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /encode", func(w http.ResponseWriter, r *http.Request) {
-		type RS struct {
-			ShortURL string `json:"short_url"`
-			Error    string `json:"error"`
-		}
-
-		// Validate origin URL
-		originURL := r.FormValue("url")
-
-		type RQ struct {
-			URL string `json:"url"`
-		}
-		var rq RQ
-		if err := json.NewDecoder(r.Body).Decode(&rq); err != nil {
-			log.Err(err)
-		}
-		originURL = rq.URL
-
-		if len(originURL) == 0 {
-			out, err := json.Marshal(RS{Error: "URL is empty"})
-			if err != nil {
-				log.Err(err)
-
-			}
-			if _, err := w.Write(out); err != nil {
-				log.Err(err)
-			}
-			return
-		}
-		_, err := url.ParseRequestURI(originURL)
-		if err != nil {
-			log.Err(err)
-		}
-
-		// Assembling short URL
-		key := sh.Generate()
-		shortURL := schema + host + ":" + port + "/decode/" + key
-
-		// Save short URL
-		st.Set(key, originURL)
-
-		// Prepare response
-		out, err := json.Marshal(RS{ShortURL: shortURL})
-		if err != nil {
-			log.Err(err)
-		}
-
-		// Write response
-		// TODO The output must be in json format?
-		if _, err := w.Write(out); err != nil {
-			log.Err(err)
-		}
-	})
-
-	// TODO opened questions for decode:
-	// 1. Just decode - without redirect (why); may be add another handler with redirect?
-	// 2. Key must be determined by input data or random (random is more secure)?
-	// ```
-	// The service should generate short aliases for long URLs
-	// and be capable of mapping those aliases back to the original URLs.
-	// ```
-	mux.HandleFunc("GET /decode/{short}", func(w http.ResponseWriter, r *http.Request) {
-		type RS struct {
-			OriginURL string `json:"origin_url"`
-			Error     string `json:"error"`
-		}
-
-		shortURL := r.PathValue("short")
-
-		// Get original URL from store
-		originURL, ok := st.Get(shortURL)
-		if !ok {
-			out, err := json.Marshal(RS{OriginURL: "", Error: "URL not found"})
-			if err != nil {
-				log.Err(err)
-			}
-			if _, err := w.Write(out); err != nil {
-				log.Err(err)
-			}
-
-			return
-		}
-
-		// Prepare response
-		out, err := json.Marshal(RS{OriginURL: originURL})
-		if err != nil {
-			log.Err(err)
-		}
-
-		// Write response
-		// TODO The output must be in json format?
-		if _, err := w.Write(out); err != nil {
-			log.Err(err)
-		}
-	})
+	mux.HandleFunc("POST /encode", encodeHandler(sh, st))
+	mux.HandleFunc("GET /decode/{short}", decodeHandler(st))
 
 	// `favicon.ico` to prevent 404 errors in the browser
 	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {

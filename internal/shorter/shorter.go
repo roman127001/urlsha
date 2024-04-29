@@ -10,14 +10,18 @@ const (
 	charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
-func New() *Shorter {
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-	return &Shorter{}
+type Shorter interface {
+	Generate() string
 }
 
-type Shorter struct{}
+func New() *Client {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+	return &Client{}
+}
 
-func (s *Shorter) Generate() string {
+type Client struct{}
+
+func (s *Client) Generate() string {
 	key := make([]byte, config.ShortUrlLength)
 	for i := range key {
 		key[i] = charset[rand.Intn(len(charset))]

@@ -16,7 +16,7 @@ func TestLen(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			sh := &Shorter{}
+			sh := New()
 			if got := sh.Generate(); len(got) != tc.want {
 				t.Errorf("Shorter.Generate() = %v, want %v", got, tc.want)
 			}
