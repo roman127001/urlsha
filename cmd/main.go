@@ -46,6 +46,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// TODO add v1 prefix
 	mux.HandleFunc("POST /encode", encodeHandler(sh, st))
 	mux.HandleFunc("GET /decode/{short}", decodeHandler(st))
 
@@ -55,6 +56,9 @@ func main() {
 			log.Err(err)
 		}
 	})
+
+	// TODO add "/health", "version", "metrics" endpoints
+	// TODO add http.Handle("/metrics", promhttp.Handler())
 
 	// Run server
 	srv := &http.Server{Addr: ":" + port, Handler: mux}
