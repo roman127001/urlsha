@@ -10,6 +10,8 @@ Encode use random string of length 6 to encode the origin url to short url.
 
 Length of the random string can be changed by changing the value of `ShortUrlLength` in `config.go` file.
 
+[![asciicast](https://asciinema.org/a/6NBaGoAcchgyzEU87bwb5kOAm.svg)](https://asciinema.org/a/6NBaGoAcchgyzEU87bwb5kOAm)
+
 
 #### TODO List (Future improvements)
 
